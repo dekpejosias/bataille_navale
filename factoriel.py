@@ -8,4 +8,3 @@ def factoriel(n):
 
 
 
-

@@ -5,11 +5,11 @@ import unittest
 from factoriel import factoriel
 class Testfactoriel(TestCase):
     def setUp(self):
-        self.n = 3
+        self.n = 4
 
     def testfactoriel(self):
         f3 = factoriel(self.n)
-        self.assertEqual(6,f3)
+        self.assertEqual(12,f3)
 
 if __name__=='__main__':
     unittest.main()
