@@ -1,6 +1,8 @@
 from ..model.game import Game
 from ..model.player import Player
 from ..model.vessel import Vessel
+from ..model.weapon import Weapon
+from ..model.battlefield import Battlefield
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -86,10 +88,6 @@ class GameDao:
         self.db_session.commit()
         return player_entity.id
 
-
-
-
-
     def find_game(self, game_id: int) -> Game:
         stmt = select(GameEntity).where(GameEntity.id == game_id)
         game_entity = self.db_session.scalars(stmt).one()
@@ -104,7 +102,6 @@ class GameDao:
         stmt = select(PlayerEntity).where(PlayerEntity.id == player_id)
         player_entity = self.db_session.scalars(stmt).one()
         return map_to_player(player_entity)
-
 
 
     def map_to_game_entity(game: Game) -> GameEntity:
@@ -141,7 +138,8 @@ class GameDao:
         weapon_entity.ammunitions = vessel.weapon.ammunitions
         weapon_entity.range = vessel.weapon.range
         weapon_entity.type = type(vessel.weapon).__name__
-        vessel_entity.id = vessel.id
+        vessel_entity.id\
+            = vessel.id
         vessel_entity.weapon = weapon_entity
         vessel_entity.type = type(vessel).__name__
         vessel_entity.hits_to_be_destroyed = vessel.hits_to_be_destroyed
@@ -171,22 +169,43 @@ class GameDao:
         battlefield_entity.max_power = battlefield.max_power
         return battlefield_entity
 
+    def map_to_battlefield(battlefield_entity: BattlefieldEntity) -> Battlefield:
+        min_x = battlefield_entity.min_x
+        max_x = battlefield_entity.max_x
+        min_y = battlefield_entity.min_y
+        max_y = battlefield_entity.max_y
+        min_z = battlefield_entity.min_z
+        max_z = battlefield_entity.max_z
+        max_power = battlefield_entity.max_power
+        battlefield = Battlefield(min_x, max_x, min_y, max_y, min_z, max_z, max_power)
+        return battlefield
 
-
-
-
-
-
-
-
-
+    def map_to_player(player_entity) -> Player:
+        name = player_entity.name
+        battle_field = map_to_battlefield(player_entity.battle_field)
+        player = Player(name, battle_field)
+        player.id = player_entity.id
+        return player
 
     def map_to_game(game_entity : GameEntity)-> Game:
+        if game_entity.id is not None:
+            game = Game(game_entity.id)
+        for player_entity in game_entity.players:
+            player = map_to_player(player_entity)
+            game.add_player(player)
+        return game
 
 
-    def map_to_player(player_entity)-> Player:
+    def map_to_vessel(vessel_entity : VesselEntity)-> Vessel:
+        x = vessel_entity.coord_x
+        y = vessel_entity.coord_y
+        z = vessel_entity.coord_z
+        hits = vessel_entity.hits_to_be_destroyed
+        ammunitions = vessel_entity.weapon.ammunitions
+        range = vessel_entity.weapon.range
+        weapon = Weapon(ammunitions,range)
+        vessel = Vessel (x,y,z,hits,weapon)
+        return vessel
 
-
-    def map_to_vessel(vessel_entity)-> Vessel:
 
 
