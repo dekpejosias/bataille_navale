@@ -1,6 +1,6 @@
-from sqlalchemy import update
+from sqlalchemy import select, update
 from ..model.game import Game
-from ..dao.game_dao import *
+from ..dao.game_dao import GameDao, PlayerEntity, WeaponEntity, VesselEntity
 from ..model.battlefield import Battlefield
 from ..model.player import Player
 class GameService:
@@ -22,12 +22,10 @@ class GameService:
             return True
         else:
             return False
-
     def get_game(self, game_id: int) -> Game:
         game = self.game_dao.find_game(game_id)
         return game
-    def add_vessel(self, game_id: int, player_name: str, vessel_type: str,
-        x: int, y: int, z: int) -> bool:
+    def add_vessel(self, game_id: int, player_name: str, vessel_type: str, x: int, y: int, z: int) -> bool:
         vessel = vessel_type(x, y, z)
         game = self.game_dao.find_game(game_id)
         for player in game.get_players():
@@ -38,28 +36,25 @@ class GameService:
                     player_entity = self.db_session.scalars(stmt).one()
                     stmt = select(Battlefield).where(Battlefield.player_id == player_entity.id)
                     battlefield_entity = self.db_session.scalars(stmt).one()
-                    self.game_dao.create_vessel(battlefield_entity.id,vessel)
+                    self.game_dao.create_vessel(battlefield_entity.id, vessel)
                     return True
                 else:
                     return False
-
-    def shoot_at(self, game_id: int, shooter_name: str, vessel_id: int, x: int,
-        y: int, z: int) -> bool:
-        vessel=self.game_dao.find_vessel(vessel_id)
+    def shoot_at(self, game_id: int, shooter_name: str, vessel_id: int, x: int, y: int, z: int) -> bool:
+        vessel = self.game_dao.find_vessel(vessel_id)
         game = self.game_dao.find_game(game_id)
         if vessel.weapon.ammunitions >= 1:
-            stmt = WeaponEntity.update().where(WeaponEntity.vessel_id == vessel_id).values(
+            stmt = update(WeaponEntity).where(WeaponEntity.vessel_id == vessel_id).values(
                 {WeaponEntity.ammunitions: WeaponEntity.ammunitions - 1})
             self.db_session.scalars(stmt).one()
             for player in game.get_players():
                 if player.get_name() != shooter_name:
                     if player.get_battlefield().fired_at(x, y, z):
-                        stmt = VesselEntity.update().where(VesselEntity.coord_x==x, VesselEntity.coord_y==y, VesselEntity.coord_z==z).values(
+                        stmt = update(VesselEntity).where(VesselEntity.coord_x == x, VesselEntity.coord_y == y, VesselEntity.coord_z == z).values(
                             {VesselEntity.hits_to_be_destroyed: VesselEntity.hits_to_be_destroyed - 1})
                         self.db_session.scalars(stmt).one()
                         return True
                     return False
-
     def get_game_status(self, game_id: int, shooter_name: str) -> str:
         game = self.game_dao.find_game(game_id)
         for player in game.get_players():
