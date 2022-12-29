@@ -14,9 +14,7 @@ Session = sessionmaker(bind=engine)
 class GameEntity(Base):
     __tablename__ = 'game'
     id = Column(Integer, primary_key=True)
-    players = relationship("PlayerEntity", back_populates="game",
-    cascade="all, delete-orphan")
-
+    players = relationship("PlayerEntity", back_populates="game", cascade="all, delete-orphan")
 
 class PlayerEntity(Base):
     __tablename__ = 'player'
@@ -24,8 +22,8 @@ class PlayerEntity(Base):
     name = Column(String, nullable=False)
     game_id = Column(Integer, ForeignKey("game.id"), nullable=False)
     game = relationship("GameEntity", back_populates="players")
-    battle_field = relationship("BattlefieldEntity", back_populates="player",
-    uselist=False, cascade="all, delete-orphan")
+    battle_field = relationship("BattlefieldEntity", back_populates="player", uselist=False,
+                                cascade="all, delete-orphan")
 
 class BattlefieldEntity(Base):
     __tablename__ = 'battlefield'
@@ -38,10 +36,7 @@ class BattlefieldEntity(Base):
     max_y = Column(Integer, nullable=False)
     max_z = Column(Integer, nullable=False)
     player = relationship("playerEntity", back_populates="player")
-    vessel = relationship("vesselEntity",
-                                back_populates="vessels", cascade="all, delete-orphan")
-
-
+    vessel = relationship("vesselEntity", back_populates="vessels", cascade="all, delete-orphan")
 
 class VesselEntity(Base):
     __tablename__ = 'vessel'
@@ -55,7 +50,6 @@ class VesselEntity(Base):
     weaponfield = relationship("battlefieldEntity", back_populates="weaponfield",
                                uselist=False, cascade="all, delete-orphan")
 
-
 class WeaponEntity(Base):
     __tablename__ = 'weapon'
     id = Column(Integer, primary_key=True)
@@ -63,7 +57,6 @@ class WeaponEntity(Base):
     range = Column(Integer, nullable=True)
     type = Column(String)
     vessel = relationship("vesselEntity", back_populates="vessel")
-
 
 class GameDao:
     def __init__(self):
@@ -127,7 +120,6 @@ def map_to_vessel_entities(battlefield_id: int, vessels: list[Vessel]) -> list[V
     for vessel in vessels:
         vessel_entity = map_to_vessel_entity(battlefield_id, vessel)
         vessel_entities.append(vessel_entity)
-
     return vessel_entities
 
 def map_to_vessel_entity(battlefield_id: int, vessel: Vessel) -> VesselEntity:
