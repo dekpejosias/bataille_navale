@@ -14,7 +14,7 @@ class GameService:
         return self.game_dao.create_game(game)
     def join_game(self, game_id: int, player_name: str) -> bool:
         game = self.game_dao.find_game(game_id)
-        battlefield = Battlefield(-10, 10, -10, 10, -1, 1, 22)
+        battlefield = Battlefield(0, 40, 0, 40, -1, 1, 22)
         player = Player(player_name, battlefield)
         game.add_player(player)
         if player in game.get_players():
